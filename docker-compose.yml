@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+    www:
+        build: "./docker"
+        volumes:
+          - /home/web/PHP5.2:/etc/apache2/htdocs
+          - ./docker/sites-available:/etc/apache2/sites-available
+          - ./docker/sites-available:/etc/apache2/sites-enabled
+        working_dir: "/etc/apache2/htdocs"
+        command : "bash -c 'source /etc/apache2/envvars; apache2 -DFOREGROUND'"
+        ports:
+          - 8052:80
+        links:
+          - mysql
+
+    mysql:
+        image: mysql:5.5
+        #command: --default-authentication-plugin=mysql_native_password
+        volumes:
+          - ./docker/mysqldump:/var/www/.
+        restart: always
+        environment:
+          MYSQL_DATABASE: 'mabase'
+          MYSQL_ROOT_PASSWORD: 'secret'
+        ports:
+          - 3352:3352
+
+    pma:
+        image: phpmyadmin/phpmyadmin
+        environment:
+         - PMA_ARBITRARY=1
+        restart: always
+        ports:
+         - 8852:80
+        volumes:
+         - /sessions
